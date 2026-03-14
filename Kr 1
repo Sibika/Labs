@@ -3,38 +3,156 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 from tkinter import ttk
 
-class FolderCheckerApp:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Проверка папки на пустоту")
-        self.root.geometry("500x300")
-        self.root.resizable(False, False)
+def proverka_papki():
+    papka = papka_var.get()
+    
+    if papka == "":
+        messagebox.showwarning("Ошибка", "Вы не выбрали папку!")
+        return
+    
+    resultat.delete(1.0, tk.END)
+    
+    try:
+        if os.path.exists(papka) == False:
+            resultat.insert(tk.END, "Такой папки не существует!\n")
+            resultat.insert(tk.END, "Проверьте правильность пути")
+            return
         
-        self.root.configure(bg='#f0f0f0')
+        if os.path.isdir(papka) == False:
+            resultat.insert(tk.END, "Это не папка, а файл!\n")
+            resultat.insert(tk.END, "Выберите папку")
+            return
         
-        self.create_widgets()
+        content = os.listdir(papka)
         
-    def create_widgets(self):
-        title_label = tk.Label(
-            self.root, 
-            text="Проверка папки на пустоту", 
-            font=("Arial", 16, "bold"),
-            bg='#f0f0f0',
-            fg='#333333'
-        )
-        title_label.pack(pady=20)
-        
-        folder_frame = tk.Frame(self.root, bg='#f0f0f0')
-        folder_frame.pack(pady=10)
-        
-        self.folder_path = tk.StringVar()
-        
-        folder_entry = tk.Entry(
-            folder_frame,
-            textvariable=self.folder_path,
-            width=40,
-            font=("Arial", 10)
-        )
+        if len(content) == 0:
+            resultat.insert(tk.END, "ПАПКА ПУСТАЯ!!!\n")
+            resultat.insert(tk.END, "В ней ничего нет")
+            resultat.insert(tk.END, "Можно удалить")
+        else:
+            resultat.insert(tk.END, "В папке есть файлы:\n")
+            resultat.insert(tk.END, "Всего: " + str(len(content)) + " шт.\n")
+            resultat.insert(tk.END, "----------------\n")
+            
+            for i in range(len(content)):
+                if i < 10:
+                    polniy_put = papka + "/" + content[i]
+                    if os.path.isdir(polniy_put):
+                        resultat.insert(tk.END, "📁 " + content[i] + "\n")
+                    else:
+                        resultat.insert(tk.END, "📄 " + content[i] + "\n")
+            
+            if len(content) > 10:
+                resultat.insert(tk.END, "... и еще " + str(len(content)-10) + " файлов\n")
+                
+    except:
+        resultat.insert(tk.END, "Какая-то ошибка!")
+        resultat.insert(tk.END, "Может нет прав?")
+
+def vybrat_papku():
+    put = filedialog.askdirectory()
+    if put:
+        papka_var.set(put)
+        metka_puti.config(text=put)
+
+def ochistit():
+    papka_var.set("")
+    metka_puti.config(text="Папка не выбрана")
+    resultat.delete(1.0, tk.END)
+
+okno = tk.Tk()
+okno.title("Лабораторная работа по Питону")
+okno.geometry("600x500")
+okno.configure(bg="#e6f3ff")
+
+zagolovok = tk.Label(
+    okno, 
+    text="ПРОВЕРКА ПАПКИ НА ПУСТОТУ", 
+    font=("Arial", 18, "bold"),
+    bg="#e6f3ff",
+    fg="#003366"
+)
+zagolovok.pack(pady=15)
+
+avtor = tk.Label(
+    okno,
+    text="Студент: Ковтун Д.С.\nГруппа: Кс-24",
+    font=("Arial", 10),
+    bg="#e6f3ff",
+    fg="#666666"
+)
+avtor.pack()
+
+papka_var = tk.StringVar()
+
+ramka1 = tk.Frame(okno, bg="#e6f3ff")
+ramka1.pack(pady=20)
+
+knopka_vibor = tk.Button(
+    ramka1,
+    text="Выбрать папку",
+    command=vybrat_papku,
+    bg="#4CAF50",
+    fg="white",
+    font=("Arial", 11),
+    padx=15,
+    pady=5
+)
+knopka_vibor.pack(side=tk.LEFT, padx=5)
+
+knopka_proverka = tk.Button(
+    ramka1,
+    text="Проверить",
+    command=proverka_papki,
+    bg="#2196F3",
+    fg="white",
+    font=("Arial", 11),
+    padx=15,
+    pady=5
+)
+knopka_proverka.pack(side=tk.LEFT, padx=5)
+
+knopka_ochistit = tk.Button(
+    ramka1,
+    text="Очистить",
+    command=ochistit,
+    bg="#ff9800",
+    fg="white",
+    font=("Arial", 11),
+    padx=15,
+    pady=5
+)
+knopka_ochistit.pack(side=tk.LEFT, padx=5)
+
+metka_puti = tk.Label(
+    okno,
+    text="Папка не выбрана",
+    font=("Arial", 10),
+    bg="#e6f3ff",
+    fg="#003366",
+    wraplength=500
+)
+metka_puti.pack(pady=10)
+
+ramka2 = tk.Frame(okno, bg="white", bd=2, relief=tk.SUNKEN)
+ramka2.pack(pady=10, padx=20, fill=tk.BOTH, expand=True)
+
+resultat = tk.Text(
+    ramka2,
+    font=("Courier New", 11),
+    bg="white",
+    fg="#333333",
+    wrap=tk.WORD,
+    padx=10,
+    pady=10
+)
+resultat.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+skroll = tk.Scrollbar(ramka2, command=resultat.yview)
+skroll.pack(side=tk.RIGHT, fill=tk.Y)
+resultat.config(yscrollcommand=skroll.set)
+
+okno.mainloop()        )
         folder_entry.pack(side=tk.LEFT, padx=5)
         
         browse_button = tk.Button(
