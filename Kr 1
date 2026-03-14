@@ -1,0 +1,186 @@
+import os
+import tkinter as tk
+from tkinter import filedialog, messagebox
+from tkinter import ttk
+
+class FolderCheckerApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Проверка папки на пустоту")
+        self.root.geometry("500x300")
+        self.root.resizable(False, False)
+        
+        self.root.configure(bg='#f0f0f0')
+        
+        self.create_widgets()
+        
+    def create_widgets(self):
+        title_label = tk.Label(
+            self.root, 
+            text="Проверка папки на пустоту", 
+            font=("Arial", 16, "bold"),
+            bg='#f0f0f0',
+            fg='#333333'
+        )
+        title_label.pack(pady=20)
+        
+        folder_frame = tk.Frame(self.root, bg='#f0f0f0')
+        folder_frame.pack(pady=10)
+        
+        self.folder_path = tk.StringVar()
+        
+        folder_entry = tk.Entry(
+            folder_frame,
+            textvariable=self.folder_path,
+            width=40,
+            font=("Arial", 10)
+        )
+        folder_entry.pack(side=tk.LEFT, padx=5)
+        
+        browse_button = tk.Button(
+            folder_frame,
+            text="Обзор...",
+            command=self.browse_folder,
+            bg='#4CAF50',
+            fg='white',
+            font=("Arial", 10),
+            padx=10
+        )
+        browse_button.pack(side=tk.LEFT)
+        
+        check_button = tk.Button(
+            self.root,
+            text="Проверить папку",
+            command=self.check_folder,
+            bg='#2196F3',
+            fg='white',
+            font=("Arial", 12, "bold"),
+            padx=20,
+            pady=10
+        )
+        check_button.pack(pady=20)
+        
+        result_frame = tk.Frame(
+            self.root,
+            bg='white',
+            relief=tk.GROOVE,
+            bd=2
+        )
+        result_frame.pack(pady=10, padx=20, fill=tk.BOTH, expand=True)
+        
+        self.result_label = tk.Label(
+            result_frame,
+            text="Выберите папку для проверки",
+            font=("Arial", 12),
+            bg='white',
+            fg='#666666',
+            wraplength=450
+        )
+        self.result_label.pack(pady=20, padx=10)
+        
+        self.progress = ttk.Progressbar(
+            self.root,
+            mode='indeterminate',
+            length=300
+        )
+        
+    def browse_folder(self):
+        folder_selected = filedialog.askdirectory()
+        if folder_selected:
+            self.folder_path.set(folder_selected)
+            self.result_label.config(
+                text=f"Выбрана папка: {folder_selected}",
+                fg='#666666'
+            )
+    
+    def check_folder(self):
+        folder = self.folder_path.get()
+        
+        if not folder:
+            messagebox.showwarning(
+                "Предупреждение",
+                "Пожалуйста, выберите папку для проверки!"
+            )
+            return
+        
+        self.progress.pack(pady=10)
+        self.progress.start()
+        self.root.update()
+        
+        try:
+            if not os.path.exists(folder):
+                self.show_result(
+                    "ОШИБКА: Папка не существует!",
+                    '#FF0000'
+                )
+                return
+            
+            if not os.path.isdir(folder):
+                self.show_result(
+                    "ОШИБКА: Указанный путь не является папкой!",
+                    '#FF0000'
+                )
+                return
+            
+            contents = os.listdir(folder)
+            
+            if not contents:
+                message = "✅ Папка ПУСТАЯ\n\n"
+                message += f"В папке нет ни одного файла или подпапки."
+                color = '#4CAF50'
+            else:
+                message = "❌ Папка НЕ ПУСТАЯ\n\n"
+                message += f"В папке содержится: {len(contents)} элемент(ов)\n\n"
+                
+                message += "Первые элементы:\n"
+                for i, item in enumerate(contents[:5], 1):
+                    item_type = "📁" if os.path.isdir(os.path.join(folder, item)) else "📄"
+                    message += f"{i}. {item_type} {item}\n"
+                
+                if len(contents) > 5:
+                    message += f"... и еще {len(contents) - 5} элемент(ов)"
+                
+                color = '#FF9800'
+            
+            self.show_result(message, color)
+            
+        except PermissionError:
+            self.show_result(
+                "❌ ОШИБКА: Нет прав доступа к папке!",
+                '#FF0000'
+            )
+        except Exception as e:
+            self.show_result(
+                f"❌ Произошла ошибка: {str(e)}",
+                '#FF0000'
+            )
+        finally:
+            self.progress.stop()
+            self.progress.pack_forget()
+    
+    def show_result(self, message, color):
+        self.result_label.config(
+            text=message,
+            fg=color
+        )
+
+def main():
+    root = tk.Tk()
+    
+    try:
+        root.iconbitmap(default='folder.ico')
+    except:
+        pass
+    
+    root.update_idletasks()
+    width = root.winfo_width()
+    height = root.winfo_height()
+    x = (root.winfo_screenwidth() // 2) - (width // 2)
+    y = (root.winfo_screenheight() // 2) - (height // 2)
+    root.geometry(f'+{x}+{y}')
+    
+    app = FolderCheckerApp(root)
+    root.mainloop()
+
+if __name__ == "__main__":
+    main()
