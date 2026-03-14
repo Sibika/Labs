@@ -1,39 +1,39 @@
 import os
 import tkinter as tk
 from tkinter import filedialog, messagebox
-from tkinter import ttk
+
 
 def proverka_papki():
     papka = papka_var.get()
-    
+
     if papka == "":
         messagebox.showwarning("Ошибка", "Вы не выбрали папку!")
         return
-    
+
     resultat.delete(1.0, tk.END)
-    
+
     try:
         if os.path.exists(papka) == False:
             resultat.insert(tk.END, "Такой папки не существует!\n")
             resultat.insert(tk.END, "Проверьте правильность пути")
             return
-        
+
         if os.path.isdir(papka) == False:
             resultat.insert(tk.END, "Это не папка, а файл!\n")
             resultat.insert(tk.END, "Выберите папку")
             return
-        
+
         content = os.listdir(papka)
-        
+
         if len(content) == 0:
             resultat.insert(tk.END, "ПАПКА ПУСТАЯ!!!\n")
-            resultat.insert(tk.END, "В ней ничего нет")
+            resultat.insert(tk.END, "В ней ничего нет\n")
             resultat.insert(tk.END, "Можно удалить")
         else:
             resultat.insert(tk.END, "В папке есть файлы:\n")
             resultat.insert(tk.END, "Всего: " + str(len(content)) + " шт.\n")
             resultat.insert(tk.END, "----------------\n")
-            
+
             for i in range(len(content)):
                 if i < 10:
                     polniy_put = papka + "/" + content[i]
@@ -41,13 +41,14 @@ def proverka_papki():
                         resultat.insert(tk.END, "📁 " + content[i] + "\n")
                     else:
                         resultat.insert(tk.END, "📄 " + content[i] + "\n")
-            
+
             if len(content) > 10:
-                resultat.insert(tk.END, "... и еще " + str(len(content)-10) + " файлов\n")
-                
+                resultat.insert(tk.END, "... и еще " + str(len(content) - 10) + " файлов\n")
+
     except:
-        resultat.insert(tk.END, "Какая-то ошибка!")
+        resultat.insert(tk.END, "Какая-то ошибка!\n")
         resultat.insert(tk.END, "Может нет прав?")
+
 
 def vybrat_papku():
     put = filedialog.askdirectory()
@@ -55,19 +56,21 @@ def vybrat_papku():
         papka_var.set(put)
         metka_puti.config(text=put)
 
+
 def ochistit():
     papka_var.set("")
     metka_puti.config(text="Папка не выбрана")
     resultat.delete(1.0, tk.END)
 
+
 okno = tk.Tk()
-okno.title("Лабораторная работа по Питону")
+okno.title("КР 1")
 okno.geometry("600x500")
 okno.configure(bg="#e6f3ff")
 
 zagolovok = tk.Label(
-    okno, 
-    text="ПРОВЕРКА ПАПКИ НА ПУСТОТУ", 
+    okno,
+    text="ПРОВЕРКА ПАПКИ НА ПУСТОТУ",
     font=("Arial", 18, "bold"),
     bg="#e6f3ff",
     fg="#003366"
